@@ -26,22 +26,25 @@ function build {
 
 function main {
   git config --global --add safe.directory "$GITHUB_WORKSPACE"
-  local diff escaped_output output
+  local diff output
   build "$INPUT_HEAD_REF"
   build "$INPUT_BASE_REF"
   set +e
   diff=$(git diff --no-index "$TMP_DIR/$INPUT_BASE_REF" "$TMP_DIR/$INPUT_HEAD_REF")
   set -e
   output=$(printf "\`\`\` diff\n%s\n\`\`\`\n" "$diff")
-  escaped_output=${output//$'\n'/'%0A'}
 
   # If escaped output is longer than 65000 characters return "output to large to print as a github comment"
-  if [ ${#escaped_output} -gt 65000 ]; then
-    escaped_output="Output is greater than 65000 characters, and therefore too large to print as a github comment."
+  if [ ${#diff} -gt 65000 ]; then
+    diff="Output is greater than 65000 characters, and therefore too large to print as a github comment."
   fi
 
-  echo "diff=$escaped_output" >> $GITHUB_OUTPUT
-  printf "\n\nOutput: %s\n" "$escaped_output"
+  delimiter="$(xxd -l 12 -p /dev/urandom)"
+  echo "diff<<${delimiter}" >> $GITHUB_OUTPUT
+  printf "%s\n" "$output" >> $GITHUB_OUTPUT
+  echo "${delimiter}" >> $GITHUB_OUTPUT
+
+  printf "\n\nOutput: %s\n" "$diff"
 }
 
 main
