@@ -40,7 +40,7 @@ function main {
     escaped_output="Output is greater than 65000 characters, and therefore too large to print as a github comment."
   fi
 
-  echo "::set-output name=diff::$escaped_output"
+  echo "diff=$escaped_output" >> $GITHUB_OUTPUT
   printf "\n\nOutput: %s\n" "$escaped_output"
 }
 
